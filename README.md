@@ -2,7 +2,7 @@
 
 Reviews for University of Maryland residence halls. Browse every on-campus dorm, filter and sort by area, type, and rating, view halls on an interactive 3D map, read resident reviews, and post your own.
 
-**Live site:** https://knightener.github.io/plazadorm/
+**Live site:** PlazaDorm.com
 
 ## Architecture
 
