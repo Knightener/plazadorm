@@ -55,15 +55,8 @@ function bathroomAmenities() {
   return out.length ? out : (str ? [{ t: str }] : []);
 }
 
-// Shared bathrooms get two toilets/showers, private singles get one.
-function withBathroomEmoji(label) {
-  if (/^community bath/i.test(label)) return `🚽🚽🚿🚿 ${label}`;
-  if (/^single all-gender/i.test(label)) return `🚽🚿 ${label}`;
-  return label;
-}
-
 function fallbackAmenities() {
-  const out = [dorm.ac ? { t: '❄ AC', c: 'good' } : null, ...bathroomAmenities()];
+  const out = [dorm.ac ? { t: 'AC', c: 'good' } : null, ...bathroomAmenities()];
   dorm.tags?.forEach(t => { if (t.t !== 'A/C') out.push(t); });
   return out.filter(Boolean);
 }
@@ -74,7 +67,7 @@ function amenityClass(label, c) {
   if (c) return ['good', 'bad', 'honors'].includes(c) ? c : '';
   if (/^no /i.test(label)) return 'bad';
   if (/llp|honors|scholars|gemstone/i.test(label)) return 'honors';
-  if (/a\/c|❄|laundry|elevator/i.test(label)) return 'good';
+  if (/^ac$|a\/c|laundry|elevator/i.test(label)) return 'good';
   return '';
 }
 
@@ -96,7 +89,7 @@ export function renderHeader() {
       </div>
       <div class="td-amenities">${amenities.map(a => {
         const label = a.t || a;
-        return `<span class="td-amenity ${amenityClass(label, a.c)}">${escHtml(withBathroomEmoji(label))}</span>`;
+        return `<span class="td-amenity ${amenityClass(label, a.c)}">${escHtml(label)}</span>`;
       }).join('')}</div>
     </div>
     <div class="td-score">

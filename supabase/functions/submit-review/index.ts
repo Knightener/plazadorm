@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.117.3'
 
 // These are set via Supabase dashboard → Edge Functions → Secrets.
 // They are never sent to the browser — that's the whole point of this function.
@@ -6,12 +6,21 @@ const HCAPTCHA_SECRET = Deno.env.get('HCAPTCHA_SECRET')!       // hCaptcha secre
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!              // auto-provided by Supabase
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')! // bypasses RLS — keep private
 
-// Only allow requests from our GitHub Pages site. Any other origin will be blocked by the browser.
+// Only allow requests from our own site. Any other origin will be blocked by the browser.
 // Authorization is listed so the anon JWT we send from script.js isn't blocked by CORS preflight.
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://knightener.github.io',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+const ALLOWED_ORIGINS = new Set([
+  'https://plazadorm.com',
+  'https://www.plazadorm.com',
+  'https://knightener.github.io',
+])
+
+function corsHeaders(origin: string | null) {
+  return {
+    'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://plazadorm.com',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
+  }
 }
 
 // Allowlist of valid dorm IDs — must match the ids in data.js exactly.
@@ -30,15 +39,15 @@ const VALID_DORM_IDS = new Set([
 // Expected year format: "2024-2025"
 const VALID_YEAR_RE = /^\d{4}-\d{4}$/
 
-// Helper to return a consistent JSON error response with CORS headers attached.
-function err(msg: string, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-  })
-}
-
 Deno.serve(async (req) => {
+  const CORS_HEADERS = corsHeaders(req.headers.get('origin'))
+  // Helper to return a consistent JSON error response with CORS headers attached.
+  const err = (msg: string, status = 400) =>
+    new Response(JSON.stringify({ error: msg }), {
+      status,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    })
+
   // Browsers send an OPTIONS preflight before the real POST to check CORS headers.
   // We must respond to it or the actual request will never be sent.
   if (req.method === 'OPTIONS') {
@@ -94,7 +103,7 @@ Deno.serve(async (req) => {
       : 'Anonymous Terp'
 
   // Use the service role key so the insert bypasses RLS (anon inserts are blocked by policy).
-  // New rows get status='pending' from the column default; they stay hidden from the
+  // New rows get approved=false from the column default; they stay hidden from the
   // public read policy until approved in the dashboard. The inserted row is returned
   // so the poster's browser can show their own review locally while it waits.
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)

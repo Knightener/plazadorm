@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.117.3'
 
 // Set via Supabase dashboard → Edge Functions → Secrets.
 // VOTE_SALT: any long random string; makes voter hashes impossible to forge.
@@ -8,6 +8,8 @@ const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')! // bypas
 
 // Same origin policy as submit-review, plus localhost for Live Server testing.
 const ALLOWED_ORIGINS = new Set([
+  'https://plazadorm.com',
+  'https://www.plazadorm.com',
   'https://knightener.github.io',
   'http://127.0.0.1:5500',
   'http://localhost:5500',
@@ -15,12 +17,18 @@ const ALLOWED_ORIGINS = new Set([
 
 // Cap scripted spam: one IP can cast at most this many votes per hour.
 const MAX_VOTES_PER_IP_PER_HOUR = 30
+// The IP comes from a header the client can forge and the clientId is
+// self-generated, so the per-IP cap alone can be dodged. This cap doesn't
+// depend on either: no single review can gain more than this many votes
+// per hour, which bounds how fast a script can inflate one.
+const MAX_VOTES_PER_REVIEW_PER_HOUR = 10
 
 function corsHeaders(origin: string | null) {
   return {
-    'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://knightener.github.io',
+    'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://plazadorm.com',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
   }
 }
 
@@ -108,6 +116,16 @@ Deno.serve(async (req) => {
     .eq('ip_hash', ip_hash)
     .gte('created_at', hourAgo)
   if ((recent ?? 0) >= MAX_VOTES_PER_IP_PER_HOUR) {
+    return json({ error: 'Too many votes, try again later' }, 429)
+  }
+
+  // Per-review rate limit.
+  const { count: reviewRecent } = await supabase
+    .from('review_votes')
+    .select('*', { count: 'exact', head: true })
+    .eq('review_id', reviewId)
+    .gte('created_at', hourAgo)
+  if ((reviewRecent ?? 0) >= MAX_VOTES_PER_REVIEW_PER_HOUR) {
     return json({ error: 'Too many votes, try again later' }, 429)
   }
 

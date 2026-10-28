@@ -15,7 +15,7 @@ import { dorms } from '../data.js';
 export const DORM_META = {
   laplata: {
     subline: 'Denton Community · 5 min to Eppley · 8 min to Stamp · Traditional-style',
-    amenities: ['❄ AC', 'Elevator', 'Community bathrooms', 'Laundry each floor', 'Freshman-heavy'],
+    amenities: ['AC', 'Elevator', 'Community bathrooms', 'Laundry each floor', 'Freshman-heavy'],
     price: '$4,706', priceRoom: 'double',
     categoryScores: [
       ['Location', 4.7], ['Community', 4.4], ['Cleanliness', 4.0],

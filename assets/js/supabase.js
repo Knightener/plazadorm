@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/+esm';
 
 // The anon key is public by design; writes are blocked by RLS.
 const supabaseUrl = 'https://qqbfiwixlqsnjsmwirtf.supabase.co'
