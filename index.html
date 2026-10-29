@@ -100,13 +100,13 @@
       </button>
     </div>
     <div class="sort-row">
-      <button class="sort-opt active" data-sort="alpha" onclick="selectSort('alpha')">Alphabetical</button>
-      <button class="sort-opt" data-sort="rating-desc" onclick="selectSort('rating-desc')">Highest rated</button>
+      <button class="sort-opt active" data-sort="rating-desc" onclick="selectSort('rating-desc')">Highest rated</button>
       <button class="sort-opt" data-sort="rating-asc" onclick="selectSort('rating-asc')">Lowest rated</button>
+      <button class="sort-opt" data-sort="newest" onclick="selectSort('newest')">Newest reviews</button>
       <select class="sort-select" id="sortSelect" aria-label="Sort halls" onchange="selectSort(this.value)">
-        <option value="alpha">Alphabetical</option>
         <option value="rating-desc">Highest rated</option>
         <option value="rating-asc">Lowest rated</option>
+        <option value="newest">Newest reviews</option>
       </select>
     </div>
   </div>

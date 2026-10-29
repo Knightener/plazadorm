@@ -96,7 +96,7 @@ let campusFilters = new Set();
 let roomTypeFilters = new Set();
 let bathroomFilters = new Set();
 let featureFilters = new Set();
-let onCampusSort = 'alpha';
+let onCampusSort = 'rating-desc';
 
 /* Saved halls — device-local, like theme/filters/helpful votes. */
 const SAVED_KEY = 'pd-saved';
@@ -240,14 +240,21 @@ function passesFilters(d) {
   return true;
 }
 
-// Zero-review halls always sink to the bottom of rating sorts.
+// reviewList arrives newest-first, so its head is the latest review.
+function latestReviewTime(d) {
+  return d.reviewList && d.reviewList.length ? new Date(d.reviewList[0].created_at).getTime() : 0;
+}
+
+// Zero-review halls always sink to the bottom; ties fall back to name order.
 function applySorting(arr) {
-  if (onCampusSort === 'alpha') return [...arr].sort((a, b) => a.name.localeCompare(b.name));
   return [...arr].sort((a, b) => {
-    if (a.reviews === 0 && b.reviews === 0) return 0;
+    if (a.reviews === 0 && b.reviews === 0) return a.name.localeCompare(b.name);
     if (a.reviews === 0) return 1;
     if (b.reviews === 0) return -1;
-    return onCampusSort === 'rating-desc' ? b.rating - a.rating : a.rating - b.rating;
+    const diff = onCampusSort === 'newest' ? latestReviewTime(b) - latestReviewTime(a)
+      : onCampusSort === 'rating-desc' ? b.rating - a.rating
+      : a.rating - b.rating;
+    return diff || a.name.localeCompare(b.name);
   });
 }
 
