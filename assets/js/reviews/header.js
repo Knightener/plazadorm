@@ -27,6 +27,7 @@ export function renderHeroQuote() {
     .filter(r => (r.text || '').trim())
     .sort((a, b) =>
       helpfulCount(b) - helpfulCount(a) || new Date(b.created_at) - new Date(a.created_at))[0];
+  placeSideCards(!best);
   if (gallery.hidden || !best) { cell?.remove(); return; }
   if (!cell) {
     cell = document.createElement('div');
@@ -36,15 +37,50 @@ export function renderHeroQuote() {
   }
   let text = best.text.trim().replace(/\s+/g, ' ');
   if (text.length > 300) text = text.slice(0, 300).replace(/\s+\S*$/, '') + '…';
-  const votes = helpfulCount(best);
   const who = [
     best.name || 'Anonymous Terp',
     best.year ? `lived here ${periodLabel(best.year)}` : null
   ].filter(Boolean).join(', ');
   cell.innerHTML = `
     <p class="hq-text">“${escHtml(text)}”</p>
-    <div class="hq-meta">${escHtml(who)}${votes ? ` · 👍 ${votes}` : ''}</div>`;
+    <div class="hq-meta">${escHtml(who)}</div>`;
 }
+
+// With no reviews there's no pull-quote and no list to sit beside, so on
+// wide screens the Location and Dorm Details cards move up next to the hero
+// photo instead of leaving both areas half empty. They wait for the first
+// fetch, so halls with reviews never see them jump.
+// With only a review or two, the list is shorter than the sidebar, so Dorm
+// Details drops under the reviews to even out the two columns.
+const wideLayout = matchMedia('(min-width: 1025px)');
+const FEW_REVIEWS = 3;
+let cardsUp = false;
+
+function placeSideCards(empty = cardsUp) {
+  const gallery = document.getElementById('gallery');
+  const anyCard = ['mapCard', 'glanceCard'].some(id => !document.getElementById(id).hidden);
+  const ready = state.reviewsLoaded && wideLayout.matches;
+  const up = empty && anyCard && ready && !gallery.hidden;
+  const few = ready && state.reviews.length > 0 && state.reviews.length < FEW_REVIEWS;
+  cardsUp = empty;
+  const sidebar = document.querySelector('.td-sidebar');
+  const reviewsCol = document.querySelector('.td-body > .td-reviews');
+  const targets = {
+    mapCard: up ? gallery : sidebar,
+    glanceCard: up ? gallery : few ? reviewsCol : sidebar
+  };
+  // Appending in this order also restores the sidebar's map-then-details order.
+  ['mapCard', 'glanceCard'].forEach(id => {
+    const card = document.getElementById(id);
+    if (card.parentElement !== targets[id]) targets[id].appendChild(card);
+  });
+  gallery.classList.toggle('with-cards', up);
+  // An emptied sidebar would still hold its 340px column.
+  const sidebarUsed = [...sidebar.children].some(el => !el.hidden);
+  document.querySelector('.td-body').classList.toggle('no-sidebar', !sidebarUsed);
+}
+
+wideLayout.addEventListener('change', () => placeSideCards());
 
 // "Community & single all-gender bathrooms" becomes one chip per type.
 function bathroomAmenities() {
@@ -76,17 +112,20 @@ export function renderHeader() {
   const avg = count ? state.reviews.reduce((s, r) => s + r.rating, 0) / count : 0;
   const amenities = meta.amenities || fallbackAmenities();
   const priceHtml = meta.price
-    ? ` · <strong>${meta.price}</strong>/semester (${meta.priceRoom || 'double'})` : '';
+    ? `<strong>${meta.price}</strong>/semester (${meta.priceRoom || 'double'})` : '';
+  // With no reviews, the empty-state card below says so; a bare "0 reviews" here just dangles.
+  const scoreMeta = [count ? `${count} review${count === 1 ? '' : 's'}` : '', priceHtml]
+    .filter(Boolean).join(' · ');
   document.getElementById('dormHeader').innerHTML = `
     <div class="td-header-left">
       <div class="td-title-row">
         <h1>${escHtml(dorm.name)}</h1>
-        <span class="td-badge">${escHtml(areaBadge(dorm))}</span>
         <button id="saveDormBtn" class="td-save" type="button" aria-pressed="false" onclick="toggleSaved()">
           <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           <span>Save</span>
         </button>
       </div>
+      <div class="td-badge">${escHtml(areaBadge(dorm))}</div>
       <div class="td-amenities">${amenities.map(a => {
         const label = a.t || a;
         return `<span class="td-amenity ${amenityClass(label, a.c)}">${escHtml(label)}</span>`;
@@ -97,7 +136,7 @@ export function renderHeader() {
         <span class="td-score-num">${avg.toFixed(1)}</span>
         <span class="td-score-stars">${starsHTML(avg, 20)}</span>
       </div>` : ''}
-      <div class="td-score-meta">${count} review${count === 1 ? '' : 's'}${priceHtml}</div>
+      ${scoreMeta ? `<div class="td-score-meta">${scoreMeta}</div>` : ''}
     </div>`;
   updateSaveBtn();
   document.title = `${dorm.name} Dorm Reviews`;

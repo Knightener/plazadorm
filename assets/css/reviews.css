@@ -174,7 +174,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   z-index: 30;
   background: var(--td-card);
   border: 1px solid var(--td-border2);
-  border-radius: 10px;
+  border-radius: 4px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
   max-height: 280px;
   overflow-y: auto;
@@ -184,7 +184,7 @@ nav { font-family: 'DM Sans', sans-serif; }
 .td-search-menu::-webkit-scrollbar { width: 8px; }
 .td-search-menu::-webkit-scrollbar-thumb {
   background: var(--td-border2);
-  border-radius: 999px;
+  border-radius: 4px;
 }
 
 .td-search-menu button {
@@ -211,7 +211,7 @@ nav { font-family: 'DM Sans', sans-serif; }
 }
 
 .td-gallery .cell {
-  border-radius: 14px;
+  border-radius: 6px;
   background: repeating-linear-gradient(45deg, var(--td-border), var(--td-border) 10px, var(--td-stripe) 10px, var(--td-stripe) 20px);
   display: flex;
   align-items: center;
@@ -243,6 +243,32 @@ nav { font-family: 'DM Sans', sans-serif; }
   text-align: left;
 }
 
+/* No reviews: two equal columns, the photo over Dorm Details on the left and
+   Location on the right. The photo takes whatever height the Location card
+   leaves, so both columns end level. The page narrows and centers to match. */
+.td-page:has(.td-gallery.with-cards) { max-width: 1180px; margin: 0 auto; }
+.td-gallery.with-cards {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 16px;
+}
+.td-gallery.with-cards .cell.hero { grid-column: 1; grid-row: 1; min-height: 240px; }
+.td-gallery.with-cards #glanceCard { grid-column: 1; grid-row: 2; }
+.td-gallery.with-cards #mapCard { grid-column: 2; grid-row: 1 / span 2; }
+/* Without Dorm Details, the photo takes the whole left column. */
+.td-gallery.with-cards:has(#glanceCard[hidden]) .cell.hero { grid-row: 1 / span 2; }
+/* Without a map, Dorm Details takes the right column instead. */
+.td-gallery.with-cards:has(#mapCard[hidden]) .cell.hero { grid-row: 1 / span 2; }
+.td-gallery.with-cards:has(#mapCard[hidden]) #glanceCard { grid-column: 2; grid-row: 1 / span 2; }
+/* Few reviews: Dorm Details sits under the list. The column stretches to the
+   sidebar's height and the card sinks to its foot, so it ends level with the
+   Location card; the list's bottom margin keeps it apart from the reviews. */
+.td-body > .td-reviews:has(> #glanceCard) { align-self: stretch; }
+.td-body > .td-reviews:has(> #glanceCard) > #reviewsList { margin-bottom: 12px; }
+.td-body > .td-reviews > #glanceCard { margin-top: auto; }
+.td-body.no-sidebar { grid-template-columns: 1fr; }
+.td-body.no-sidebar .td-sidebar { display: none; }
+
 .hq-text {
   font: 500 16.5px/1.5 'DM Sans', system-ui, sans-serif;
   color: var(--td-ink);
@@ -253,7 +279,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   overflow: hidden;
 }
 
-.hq-meta { font: 12.5px 'DM Sans', system-ui, sans-serif; color: var(--td-muted); }
+.hq-meta { font-size: 12.5px; color: var(--td-muted); }
 
 /* ---------------- DORM HEADER ---------------- */
 .td-header {
@@ -267,18 +293,15 @@ nav { font-family: 'DM Sans', sans-serif; }
 
 .td-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.td-header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; color: var(--td-ink); }
+.td-header h1 { font-size: 30px; font-weight: 700; color: var(--td-ink); }
 
 :root[data-theme="dark"] .td-badge { color: #ff97a4; }
 
 .td-badge {
-  font-size: 11.5px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--td-red);
-  background: var(--td-red-tint);
-  padding: 4px 10px;
-  border-radius: 999px;
-  text-transform: uppercase;
+  margin-top: 4px;
 }
 
 /* Save (heart) pill next to the title. */
@@ -288,7 +311,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   gap: 6px;
   background: none;
   border: 1px solid var(--td-border2);
-  border-radius: 999px;
+  border-radius: 4px;
   padding: 4px 12px;
   color: var(--td-secondary);
   font-size: 12.5px;
@@ -311,7 +334,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   background: var(--td-card);
   border: 1px solid var(--td-border2);
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: 4px;
 }
 
 /* Color-coded features, same scheme as the v1 tags: green for perks,
@@ -330,7 +353,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   justify-content: flex-end;
 }
 
-.td-score-num { font-size: 44px; font-weight: 800; letter-spacing: -0.04em; color: var(--td-ink); }
+.td-score-num { font-size: 44px; font-weight: 700; color: var(--td-ink); }
 
 .td-score-stars { color: var(--td-star); font-size: 20px; letter-spacing: 2px; white-space: nowrap; }
 .star-empty { color: var(--td-border2); }
@@ -369,7 +392,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   background: var(--td-card);
   border: 1px solid var(--td-border2);
   padding: 7px 14px;
-  border-radius: 999px;
+  border-radius: 4px;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
@@ -390,7 +413,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   min-width: 150px;
   background: var(--td-card);
   border: 1px solid var(--td-border);
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 6px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   display: none;
@@ -406,7 +429,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   font-weight: 600;
   color: var(--td-secondary);
   padding: 7px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
 }
 
 .td-menu button:hover { background: var(--td-track); }
@@ -416,23 +439,21 @@ nav { font-family: 'DM Sans', sans-serif; }
 .td-card {
   background: var(--td-card);
   border: 1px solid var(--td-border);
-  border-radius: 16px;
+  border-radius: 6px;
   padding: 20px 22px;
-  transition: box-shadow 0.15s;
 }
 
-.td-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
 
 .rev-head { display: flex; align-items: center; gap: 12px; }
 
 .rev-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 999px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 15px;
   flex-shrink: 0;
 }
@@ -454,7 +475,7 @@ nav { font-family: 'DM Sans', sans-serif; }
 
 .rev-posted { font-size: 12px; color: var(--td-muted); }
 
-.rev-tag { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+.rev-tag { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 4px; }
 .rev-tag.pos { color: var(--td-pos); background: var(--td-pos-bg); }
 .rev-tag.neg { color: var(--td-neg); background: var(--td-neg-bg); }
 
@@ -476,6 +497,20 @@ nav { font-family: 'DM Sans', sans-serif; }
 
 .td-empty { color: var(--td-muted); font-size: 14px; padding: 8px 2px; }
 
+/* Empty filter row collapses, so its grid gap doesn't push the list down. */
+.td-filters:empty { margin-bottom: -14px; }
+
+.td-empty-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.td-empty-title { font-size: 16px; font-weight: 700; color: var(--td-ink); }
+.td-empty-text { color: var(--td-muted); font-size: 14px; margin: 2px 0 0; }
+.td-empty-card .td-write-btn { width: auto; flex: none; }
+
 /* Loading spinner lives in chrome.css. */
 
 /* Show-all ghost button. */
@@ -486,7 +521,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   color: var(--td-red);
   padding: 10px 22px;
   border: 1.5px solid var(--td-red);
-  border-radius: 999px;
+  border-radius: 4px;
   transition: background 0.15s, color 0.15s;
 }
 
@@ -497,10 +532,9 @@ nav { font-family: 'DM Sans', sans-serif; }
 
 /* Matches .glance-title / .td-walk-title. */
 .td-card-title {
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.02em;
-  color: var(--td-secondary);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--td-ink);
   margin-bottom: 14px;
 }
 
@@ -508,8 +542,8 @@ nav { font-family: 'DM Sans', sans-serif; }
 
 .bd-row { display: flex; align-items: center; gap: 10px; }
 .bd-label { width: 92px; font-size: 13.5px; color: var(--td-secondary); flex-shrink: 0; }
-.bd-track { flex: 1; height: 8px; background: var(--td-track); border-radius: 999px; overflow: hidden; }
-.bd-fill { height: 100%; background: var(--td-red); border-radius: 999px; }
+.bd-track { flex: 1; height: 6px; background: var(--td-track); border-radius: 2px; overflow: hidden; }
+.bd-fill { height: 100%; background: var(--td-red); }
 .bd-score { width: 26px; text-align: right; font-size: 13.5px; font-weight: 700; color: var(--td-ink); }
 
 .bd-foot {
@@ -523,10 +557,9 @@ nav { font-family: 'DM Sans', sans-serif; }
 
 /* At-a-glance facts card. */
 .glance-title {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--td-secondary);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--td-ink);
   margin-bottom: 12px;
 }
 
@@ -562,7 +595,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   background: var(--td-red);
   color: #fff;
   border: none;
-  border-radius: 999px;
+  border-radius: 4px;
   font-size: 13.5px;
   font-weight: 700;
   transition: background 0.15s;
@@ -571,7 +604,7 @@ nav { font-family: 'DM Sans', sans-serif; }
 .td-write-btn:hover { background: #b01228; }
 
 /* ---------------- WRITE-A-REVIEW FORM ---------------- */
-.td-form-title { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: var(--td-ink); margin-bottom: 16px; }
+.td-form-title { font-size: 18px; font-weight: 700; color: var(--td-ink); margin-bottom: 16px; }
 
 .td-label {
   display: block;
@@ -585,7 +618,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   width: 100%;
   background: var(--td-card);
   border: 1px solid var(--td-border2);
-  border-radius: 10px;
+  border-radius: 4px;
   color: var(--td-ink);
   padding: 10px 14px;
   font: inherit;
@@ -618,7 +651,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   background: var(--td-card);
   border: 1px solid var(--td-border2);
   padding: 7px 14px;
-  border-radius: 999px;
+  border-radius: 4px;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
@@ -634,7 +667,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   font-size: 13px;
   font-weight: 700;
   padding: 10px 22px;
-  border-radius: 999px;
+  border-radius: 4px;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -652,7 +685,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   background: var(--td-ink);
   color: var(--td-page);
   padding: 12px 22px;
-  border-radius: 999px;
+  border-radius: 4px;
   font-size: 13.5px;
   font-weight: 600;
   z-index: 9999;
@@ -691,7 +724,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   max-width: 92vw;
   max-height: 76vh;
   object-fit: contain;
-  border-radius: 16px;
+  border-radius: 6px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 
@@ -710,7 +743,7 @@ nav { font-family: 'DM Sans', sans-serif; }
   width: 84px;
   height: 58px;
   flex: 0 0 auto;
-  border-radius: 9px;
+  border-radius: 3px;
   border: 2px solid transparent;
   background-size: cover;
   background-position: center;
@@ -741,7 +774,7 @@ body.lightbox-open { overflow: hidden; }
 .td-map-frame {
   position: relative;
   height: 180px;
-  border-radius: 10px;
+  border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
   background: var(--td-track);
@@ -750,7 +783,7 @@ body.lightbox-open { overflow: hidden; }
 .td-map-frame .maplibregl-canvas { cursor: pointer; }
 
 /* MapLibre's stylesheet sets Helvetica on the map container; match the page font. */
-.td-map-frame .maplibregl-map { font-family: 'DM Sans', system-ui, sans-serif; }
+.td-map-frame .maplibregl-map { font-family: inherit; }
 
 /* Rough dark-mode look for the light map tiles; the marker is a DOM
    overlay, so filtering only the canvas leaves it red. */
@@ -767,10 +800,9 @@ body.lightbox-open { overflow: hidden; }
 }
 
 .td-walk-title {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--td-secondary);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--td-ink);
   margin-bottom: 6px;
 }
 
@@ -784,10 +816,8 @@ body.lightbox-open { overflow: hidden; }
   width: calc(100% + 20px);
   margin-inline: -10px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 3px;
   text-align: left;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-optical-sizing: auto;
   font-size: 13.5px;
   font-weight: 600;
   line-height: 1.35;
@@ -799,8 +829,7 @@ body.lightbox-open { overflow: hidden; }
 
 .td-walk-kind {
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-weight: 500;
   color: var(--td-muted);
 }
 

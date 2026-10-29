@@ -45,6 +45,8 @@ function starsMenuHTML() {
 export function renderFilters() {
   const years = distinct(state.reviews, 'year').sort().reverse();
   const row = document.getElementById('filterRow');
+  // Nothing to sort or filter yet.
+  if (!state.reviews.length) { row.innerHTML = ''; return; }
   row.innerHTML = `
     <button class="td-chip ${state.filters.sort === 'helpful' ? 'active' : ''}" data-act="sort-helpful">Most helpful</button>
     <button class="td-chip ${state.filters.sort === 'newest' ? 'active' : ''}" data-act="sort-newest">Newest</button>
@@ -137,8 +139,19 @@ function reviewCardHTML(r, i, isPending = false) {
         ${tags}
         ${isPending
           ? '<span class="rev-tag pend" title="Visible only to you until it gets approved">Pending approval</span>'
-          : `<button class="rev-helpful ${voted ? 'voted' : ''}" data-id="${escHtml(String(r.id))}" title="${voted ? 'Click to remove your helpful vote' : 'Mark this review helpful'}">👍 Helpful (${helpfulCount(r)})</button>`}
+          : `<button class="rev-helpful ${voted ? 'voted' : ''}" data-id="${escHtml(String(r.id))}" title="${voted ? 'Click to remove your helpful vote' : 'Mark this review helpful'}">Helpful (${helpfulCount(r)})</button>`}
       </div>
+    </div>`;
+}
+
+function noReviewsHTML() {
+  return `
+    <div class="td-card td-empty-card">
+      <div>
+        <div class="td-empty-title">No reviews yet</div>
+        <p class="td-empty-text">Nobody has reviewed ${escHtml(dorm.name)} yet.</p>
+      </div>
+      <button class="td-write-btn td-first-review" type="button">Write a review</button>
     </div>`;
 }
 
@@ -154,8 +167,14 @@ export function renderReviews() {
     (shown.length
       ? shown.map((r, i) => reviewCardHTML(r, i)).join('')
       : state.reviewsLoaded && !mine.length
-        ? `<p class="td-empty">${state.reviews.length ? 'No reviews match these filters.' : 'No reviews yet!'}</p>`
+        ? (state.reviews.length ? '<p class="td-empty">No reviews match these filters.</p>' : noReviewsHTML())
         : '');
+
+  // The empty card carries its own button, so the sidebar one would just repeat it.
+  const firstBtn = list.querySelector('.td-first-review');
+  const writeLink = document.getElementById('writeReviewLink');
+  writeLink.hidden = !!firstBtn;
+  firstBtn?.addEventListener('click', () => writeLink.click());
 
   const btn = document.getElementById('showAllBtn');
   btn.hidden = all.length <= state.visibleCount;

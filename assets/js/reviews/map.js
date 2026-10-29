@@ -20,6 +20,8 @@ export function renderMapPreview() {
     attributionControl: false
   });
   new maplibregl.Marker({ color: '#E21833' }).setLngLat([dorm.lng, dorm.lat]).addTo(previewMap);
+  // The card can move between the sidebar and the gallery row; keep the canvas sized to it.
+  new ResizeObserver(() => previewMap.resize()).observe(document.getElementById('mapPreview'));
   previewMap.on('load', () => {
     previewMap.addSource('walk-route', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     const layout = { 'line-cap': 'round', 'line-join': 'round' };
